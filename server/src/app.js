@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
 
+const { prisma } = require("./config/prisma");
 const authRoutes = require("./routes/authRoutes");
 const teamRoutes = require("./routes/teamRoutes");
 const inviteRoutes = require("./routes/inviteRoutes");
@@ -18,12 +19,32 @@ const { errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
+app.disable("x-powered-by");
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(helmet());
-app.use(morgan("dev"));
+
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("dev"));
+}
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -46,6 +67,26 @@ app.get("/api/health", (req, res) => {
     success: true,
     message: "DevFlow API is running",
   });
+});
+
+app.get("/api/health/ready", async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+
+    res.status(200).json({
+      success: true,
+      message: "DevFlow API is ready",
+      database: "connected",
+    });
+  } catch (error) {
+    console.error("Readiness check failed:", error);
+
+    res.status(503).json({
+      success: false,
+      message: "DevFlow API is not ready",
+      database: "unavailable",
+    });
+  }
 });
 
 app.use("/api/auth", authRoutes);

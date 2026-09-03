@@ -1,6 +1,10 @@
 const bcrypt = require("bcrypt");
 const { prisma } = require("../config/prisma");
-const { createToken, setAuthCookie } = require("../utils/auth");
+const {
+  createToken,
+  setAuthCookie,
+  clearAuthCookie,
+} = require("../utils/auth");
 
 const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -88,11 +92,7 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-  res.clearCookie("devflow_token", {
-    httpOnly: true,
-    secure: process.env.COOKIE_SECURE === "true",
-    sameSite: "lax",
-  });
+  clearAuthCookie(res);
 
   res.status(200).json({
     success: true,
