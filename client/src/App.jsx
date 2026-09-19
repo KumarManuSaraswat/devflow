@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/LoginPage";
@@ -10,6 +10,7 @@ import ProjectPage from "./pages/ProjectPage";
 import TaskPage from "./pages/TaskPage";
 import TeamMembersPage from "./pages/TeamMembersPage";
 import InvitePage from "./pages/InvitePage";
+import LandingPage from "./pages/LandingPage";
 
 const App = () => {
   return (
@@ -35,7 +36,7 @@ const App = () => {
         </Route>
       </Route>
 
-      <Route path="/" element={<Navigate to="/teams" replace />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
