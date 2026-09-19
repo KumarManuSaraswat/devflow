@@ -1,8 +1,12 @@
+import useReveal from "../motion/useReveal";
+
 const Card = ({ children, className = "" }) => {
+  const ref = useReveal();
   return (
     <div
+      ref={ref}
       className={[
-        "rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-sm",
+        "surface-card reveal rounded-2xl border border-slate-200/80 bg-white/90 shadow-sm",
         className,
       ].join(" ")}
     >

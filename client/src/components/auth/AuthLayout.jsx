@@ -9,9 +9,9 @@ const AuthLayout = ({
   quote,
 }) => {
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="auth-layout min-h-screen bg-slate-50">
       <div className="grid min-h-screen lg:grid-cols-2">
-        <section className="relative hidden overflow-hidden bg-brand-700 px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between xl:px-16">
+        <section className="auth-scene relative hidden overflow-hidden bg-brand-700 px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between xl:px-16">
           <div className="auth-orb-one absolute -right-32 -top-32 h-96 w-96 rounded-full bg-brand-500/40 blur-3xl" />
           <div className="auth-orb-two absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-indigo-950/50 blur-3xl" />
 
@@ -35,7 +35,7 @@ const AuthLayout = ({
             </Link>
           </div>
 
-          <div className="relative max-w-xl">
+          <div className="auth-copy relative max-w-xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-200">
               Build together
             </p>
@@ -62,8 +62,8 @@ const AuthLayout = ({
           </p>
         </section>
 
-        <section className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6 lg:px-12">
-          <div className="w-full max-w-md">
+        <section className="auth-form-panel flex min-h-screen items-center justify-center px-4 py-16 sm:px-6 lg:px-12">
+          <div className="auth-form w-full max-w-md">
             <div className="mb-8 lg:hidden">
               <Link
                 to="/login"

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import Button from "../common/Button";
+import PageTransition from "../motion/PageTransition";
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
@@ -10,7 +11,7 @@ const AppLayout = () => {
 
   const linkClass = ({ isActive }) =>
     [
-      "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+      "sidebar-link flex items-center rounded-lg px-3 py-2.5 text-sm font-medium",
       isActive
         ? "bg-brand-50 text-brand-700"
         : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
@@ -214,8 +215,8 @@ const AppLayout = () => {
       </aside>
 
       <div className="lg:pl-64">
-        <main className="content-enter mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <Outlet />
+        <main className="mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:px-8 lg:py-8 lg:pb-20">
+          <PageTransition />
         </main>
       </div>
     </div>

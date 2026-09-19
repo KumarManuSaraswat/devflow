@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import App from "./App";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { AuthProvider } from "./context/AuthContext";
+import MotionProvider from "./components/motion/MotionProvider";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -12,7 +13,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
      <ErrorBoundary>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <MotionProvider>
+          <App />
+        </MotionProvider>
         <Toaster
           position="top-right"
           richColors

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Badge from "../common/Badge";
+import useReveal from "../motion/useReveal";
 import {
   PRIORITY_LABELS,
   PRIORITY_STYLES,
@@ -15,10 +16,12 @@ const getInitials = (name = "") => {
 };
 
 const TaskCard = ({ task }) => {
+  const ref = useReveal();
   return (
     <Link
+      ref={ref}
       to={`/tasks/${task.id}`}
-      className="task-card group block rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-brand-300"
+      className="task-card reveal group block rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-brand-300"
     >
       <div className="flex items-start justify-between gap-3">
         <Badge

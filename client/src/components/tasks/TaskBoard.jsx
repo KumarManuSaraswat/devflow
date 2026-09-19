@@ -1,4 +1,5 @@
 import TaskCard from "./TaskCard";
+import Reveal from "../motion/Reveal";
 import {
   STATUS_LABELS,
   STATUS_STYLES,
@@ -18,14 +19,16 @@ const TaskBoard = ({ tasks }) => {
   );
 
   return (
-    <div className="-mx-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+    <div className="task-board-scroll -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
       <div className="flex min-w-max gap-4">
-        {TASK_STATUSES.map((status) => {
+        {TASK_STATUSES.map((status, index) => {
           const style = STATUS_STYLES[status];
           const columnTasks = tasksByStatus[status];
 
           return (
-            <section
+            <Reveal
+              as="section"
+              delay={Math.min(index * 65, 260)}
               key={status}
               className="board-column flex w-72 flex-col rounded-2xl border border-slate-200/80 p-3"
             >
@@ -41,7 +44,8 @@ const TaskBoard = ({ tasks }) => {
                 </div>
 
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-bold ${style.count}`}
+                  key={columnTasks.length}
+                  className={`count-change rounded-full px-2 py-0.5 text-xs font-bold ${style.count}`}
                 >
                   {columnTasks.length}
                 </span>
@@ -62,7 +66,7 @@ const TaskBoard = ({ tasks }) => {
                   ))
                 )}
               </div>
-            </section>
+            </Reveal>
           );
         })}
       </div>

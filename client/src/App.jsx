@@ -11,15 +11,22 @@ import TaskPage from "./pages/TaskPage";
 import TeamMembersPage from "./pages/TeamMembersPage";
 import InvitePage from "./pages/InvitePage";
 import LandingPage from "./pages/LandingPage";
+import PageTransition from "./components/motion/PageTransition";
 
 const App = () => {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route element={<PageTransition />}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
 
       <Route element={<ProtectedRoute />}>
-        <Route path="/invite/:token" element={<InvitePage />} />
+        <Route element={<PageTransition />}>
+          <Route path="/invite/:token" element={<InvitePage />} />
+        </Route>
 
         <Route element={<AppLayout />}>
           <Route path="/teams" element={<TeamsPage />} />
@@ -36,8 +43,6 @@ const App = () => {
         </Route>
       </Route>
 
-      <Route path="/" element={<LandingPage />} />
-      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };

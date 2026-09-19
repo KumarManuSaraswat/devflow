@@ -97,7 +97,7 @@ const TaskPage = () => {
         <div className="mt-6 flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
-              <Badge value={task.status}>
+              <Badge key={task.status} value={task.status} className="count-change">
                 {task.status.replaceAll("_", " ")}
               </Badge>
 
