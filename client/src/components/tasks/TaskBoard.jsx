@@ -27,7 +27,7 @@ const TaskBoard = ({ tasks }) => {
           return (
             <section
               key={status}
-              className="flex w-72 flex-col rounded-2xl border border-slate-200 bg-slate-50/80 p-3"
+              className="board-column flex w-72 flex-col rounded-2xl border border-slate-200/80 p-3"
             >
               <header className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">

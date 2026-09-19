@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import Button from "../common/Button";
 
 const AppLayout = () => {
@@ -50,13 +50,13 @@ const AppLayout = () => {
   }, [isMobileMenuOpen]);
 
   return (
-    <div className="min-h-screen bg-page">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-slate-200 bg-white p-5 lg:block">
+    <div className="app-shell">
+      <aside className="app-sidebar fixed inset-y-0 left-0 hidden w-64 border-r border-slate-200/80 p-5 lg:block">
         <NavLink
           to="/teams"
           className="flex items-center gap-3 px-2 py-3"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-lg font-black text-white">
+          <div className="brand-mark flex h-9 w-9 items-center justify-center rounded-xl text-lg font-black text-white">
             D
           </div>
 
@@ -78,7 +78,7 @@ const AppLayout = () => {
           </NavLink>
         </nav>
 
-        <div className="absolute inset-x-5 bottom-5 rounded-xl border border-slate-200 bg-slate-50 p-3">
+        <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-slate-200/80 bg-white/75 p-3 shadow-sm backdrop-blur">
           <p className="truncate text-sm font-semibold text-slate-800">
             {user?.name}
           </p>
@@ -214,7 +214,7 @@ const AppLayout = () => {
       </aside>
 
       <div className="lg:pl-64">
-        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <main className="content-enter mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           <Outlet />
         </main>
       </div>

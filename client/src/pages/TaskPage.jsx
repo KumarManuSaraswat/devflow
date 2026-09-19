@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getTaskById } from "../api/taskApi";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import Badge from "../components/common/Badge";
-import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import PageLoader from "../components/common/PageLoader";
 import TaskReviewActions from "../components/tasks/TaskReviewActions";
@@ -31,7 +30,7 @@ const TaskPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadTask = async () => {
+  const loadTask = useCallback(async () => {
     try {
       setError("");
 
@@ -47,11 +46,15 @@ const TaskPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [taskId]);
 
   useEffect(() => {
-    loadTask();
-  }, [taskId]);
+    const loadTimer = window.setTimeout(() => {
+      void loadTask();
+    }, 0);
+
+    return () => window.clearTimeout(loadTimer);
+  }, [loadTask]);
 
   const handleUpdated = async () => {
     await loadTask();

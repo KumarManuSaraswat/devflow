@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { getTeamById } from "../api/teamApi";
@@ -35,7 +35,7 @@ const TeamPage = () => {
     membership?.role
   );
 
-  const loadTeamData = async () => {
+  const loadTeamData = useCallback(async () => {
     try {
       setError("");
 
@@ -56,11 +56,15 @@ const TeamPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [teamId]);
 
   useEffect(() => {
-    loadTeamData();
-  }, [teamId]);
+    const loadTimer = window.setTimeout(() => {
+      void loadTeamData();
+    }, 0);
+
+    return () => window.clearTimeout(loadTimer);
+  }, [loadTeamData]);
 
   const handleChange = (event) => {
     setFormData((current) => ({
@@ -208,7 +212,7 @@ const TeamPage = () => {
       )}
 
       <section className="grid gap-4 sm:grid-cols-2">
-        <Card className="p-5">
+        <Card className="metric-card p-5 text-brand-600">
           <p className="text-sm font-medium text-slate-500">
             Team members
           </p>
@@ -225,7 +229,7 @@ const TeamPage = () => {
           </Link>
         </Card>
 
-        <Card className="p-5">
+        <Card className="metric-card p-5 text-violet-600">
           <p className="text-sm font-medium text-slate-500">
             Projects
           </p>
@@ -300,7 +304,7 @@ const TeamPage = () => {
             {projects.map((project) => (
               <Card
                 key={project.id}
-                className="group flex min-h-52 flex-col p-5 transition duration-200 hover:-translate-y-1 hover:border-brand-200 hover:shadow-md"
+                className="interactive-card group flex min-h-52 flex-col p-5"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 font-bold text-slate-700">

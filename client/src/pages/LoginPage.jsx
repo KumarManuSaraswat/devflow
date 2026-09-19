@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import AuthLayout from "../components/auth/AuthLayout";
 import Button from "../components/common/Button";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 const LoginPage = () => {
   const navigate = useNavigate();

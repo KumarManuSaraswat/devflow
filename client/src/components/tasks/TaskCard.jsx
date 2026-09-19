@@ -18,7 +18,7 @@ const TaskCard = ({ task }) => {
   return (
     <Link
       to={`/tasks/${task.id}`}
-      className="group block rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
+      className="task-card group block rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:border-brand-300"
     >
       <div className="flex items-start justify-between gap-3">
         <Badge

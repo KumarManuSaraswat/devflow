@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import Badge from "../components/common/Badge";
@@ -6,7 +6,7 @@ import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import Modal from "../components/common/Modal";
 import PageLoader from "../components/common/PageLoader";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import { createTeam, getMyTeams } from "../api/teamApi";
 
 const TeamsPage = () => {
@@ -25,7 +25,7 @@ const TeamsPage = () => {
     description: "",
   });
 
-  const loadTeams = async () => {
+  const loadTeams = useCallback(async () => {
     try {
       setError("");
 
@@ -39,11 +39,15 @@ const TeamsPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadTeams();
-  }, []);
+    const loadTimer = window.setTimeout(() => {
+      void loadTeams();
+    }, 0);
+
+    return () => window.clearTimeout(loadTimer);
+  }, [loadTeams]);
 
   const handleChange = (event) => {
     setFormData((current) => ({
@@ -187,7 +191,7 @@ const TeamsPage = () => {
             {teams.map((team) => (
               <Card
                 key={team.id}
-                className="group flex min-h-52 flex-col p-5 transition duration-200 hover:-translate-y-1 hover:border-brand-200 hover:shadow-md"
+                className="interactive-card group flex min-h-52 flex-col p-5"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-lg font-bold text-brand-700">

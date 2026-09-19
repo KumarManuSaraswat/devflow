@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -59,7 +59,7 @@ const TeamMembersPage = () => {
 
   const isOwner = membership?.role === "OWNER";
 
-  const loadPageData = async () => {
+  const loadPageData = useCallback(async () => {
     try {
       setError("");
 
@@ -88,11 +88,15 @@ const TeamMembersPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [teamId]);
 
   useEffect(() => {
-    loadPageData();
-  }, [teamId]);
+    const loadTimer = window.setTimeout(() => {
+      void loadPageData();
+    }, 0);
+
+    return () => window.clearTimeout(loadTimer);
+  }, [loadPageData]);
 
   const handleInviteChange = (event) => {
     setInviteForm((current) => ({

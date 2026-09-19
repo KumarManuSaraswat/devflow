@@ -6,14 +6,14 @@ const Modal = ({
 }) => {
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 p-4 sm:p-6"
+      className="modal-backdrop fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
       <div className="flex min-h-full items-center justify-center">
         <div
-          className={`w-full ${maxWidth} max-h-[calc(100dvh-2rem)] overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-h-[calc(100dvh-3rem)]`}
+          className={`modal-panel w-full ${maxWidth} max-h-[calc(100dvh-2rem)] overflow-hidden rounded-3xl border border-white/70 bg-white shadow-2xl sm:max-h-[calc(100dvh-3rem)]`}
         >
           <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
             <h2

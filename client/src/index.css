@@ -1,59 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
-  --color-brand-900: #312e81;
-
-  --color-surface: #ffffff;
-  --color-page: #f8fafc;
-  --color-ink: #0f172a;
-  --color-muted: #64748b;
-  --color-border: #e2e8f0;
+  --color-brand-50: #eef7ff; --color-brand-100: #d9edff; --color-brand-200: #b9ddff; --color-brand-300: #88c8ff;
+  --color-brand-500: #3478f6; --color-brand-600: #2563eb; --color-brand-700: #1d4ed8; --color-brand-800: #1e40af; --color-brand-900: #172554;
+  --color-surface: #ffffff; --color-page: #f5f7ff; --color-ink: #172554; --color-muted: #64748b; --color-border: #dce3f0;
 }
+
+@keyframes float { 0%,100% { transform: translate3d(0,0,0) rotate(0deg); } 50% { transform: translate3d(0,-16px,0) rotate(3deg); } }
+@keyframes drift { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(28px,-20px,0) scale(1.08); } }
+@keyframes rise-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes sheen { from { transform: translateX(-130%) skewX(-18deg); } to { transform: translateX(210%) skewX(-18deg); } }
 
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
-
-  html {
-    background: #f8fafc;
-  }
-
-  body {
-    margin: 0;
-    min-width: 320px;
-    min-height: 100vh;
-    background: #f8fafc;
-    color: #0f172a;
-    font-family:
-      Inter, ui-sans-serif, system-ui, -apple-system,
-      BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  button,
-  input,
-  textarea,
-  select {
-    font: inherit;
-  }
-
-  button {
-    cursor: pointer;
-  }
-
-  button:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
+  * { box-sizing: border-box; }
+  html { background: #f5f7ff; }
+  body { margin: 0; min-width: 320px; min-height: 100vh; background: #f5f7ff; color: #172554; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  button, input, textarea, select { font: inherit; }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: .6; }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: #bfdbfe; color: #172554; }
 }
+
+.app-shell { min-height: 100vh; background: radial-gradient(circle at 78% -8%, #dbeafe 0, transparent 29rem), radial-gradient(circle at 8% 90%, #ede9fe 0, transparent 27rem), #f7f9ff; }
+.app-sidebar { background: linear-gradient(165deg, #fff 0%, #f7faff 55%, #eef5ff 100%); }
+.brand-mark { background: linear-gradient(135deg, #2563eb, #7c3aed); box-shadow: 0 12px 24px -12px rgba(37,99,235,.85); }
+.content-enter { animation: rise-in .45s cubic-bezier(.2,.75,.25,1) both; }
+.content-enter > * { animation: rise-in .5s cubic-bezier(.2,.75,.25,1) both; }
+.content-enter > *:nth-child(2) { animation-delay: .06s; } .content-enter > *:nth-child(3) { animation-delay: .12s; } .content-enter > *:nth-child(4) { animation-delay: .18s; }
+.interactive-card { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.interactive-card:hover { transform: translateY(-5px); border-color: #bfdbfe; box-shadow: 0 18px 35px -20px rgba(30,64,175,.48); }
+.metric-card { position: relative; overflow: hidden; background: linear-gradient(135deg, rgba(255,255,255,.95), rgba(248,250,255,.9)); }
+.metric-card::after { content: ""; position: absolute; inset: auto -15% -70% auto; width: 7rem; height: 7rem; border-radius: 9999px; background: currentColor; opacity: .07; }
+.board-column { background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(241,245,249,.72)); box-shadow: inset 0 1px rgba(255,255,255,.9); transition: transform .25s ease, box-shadow .25s ease; }
+.board-column:hover { transform: translateY(-3px); box-shadow: 0 18px 32px -28px rgba(15,23,42,.7); }
+.task-card { position: relative; overflow: hidden; transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+.task-card::after { content: ""; position: absolute; inset: 0 auto 0 -18%; width: 18%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent); opacity: 0; }
+.task-card:hover::after { animation: sheen .65s ease; opacity: 1; }
+.task-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 16px 28px -19px rgba(37,99,235,.55); }
+.primary-button { position: relative; overflow: hidden; box-shadow: 0 10px 20px -12px rgba(37,99,235,.9); transition: transform .2s ease, box-shadow .2s ease; }
+.primary-button:hover { transform: translateY(-2px); box-shadow: 0 15px 26px -13px rgba(37,99,235,.8); }
+.primary-button::after { content: ""; position: absolute; inset: 0 auto 0 -20%; width: 20%; background: rgba(255,255,255,.25); transform: skewX(-18deg); }
+.primary-button:hover::after { animation: sheen .55s ease; }
+.modal-backdrop { animation: rise-in .18s ease-out both; backdrop-filter: blur(5px); }
+.modal-panel { animation: rise-in .28s cubic-bezier(.2,.8,.2,1) both; }
+.auth-orb-one { animation: drift 9s ease-in-out infinite; }.auth-orb-two { animation: float 7s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }

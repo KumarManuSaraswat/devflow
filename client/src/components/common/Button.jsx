@@ -20,8 +20,9 @@ const Button = ({
     <button
       type={type}
       className={[
-        "inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold",
+        "inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold",
         "transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2",
+        variant === "primary" ? "primary-button" : "transition-transform duration-200 hover:-translate-y-0.5",
         variants[variant],
         className,
       ].join(" ")}

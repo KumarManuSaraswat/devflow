@@ -12,8 +12,8 @@ const AuthLayout = ({
     <main className="min-h-screen bg-slate-50">
       <div className="grid min-h-screen lg:grid-cols-2">
         <section className="relative hidden overflow-hidden bg-brand-700 px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between xl:px-16">
-          <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-brand-500/40 blur-3xl" />
-          <div className="absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-indigo-950/50 blur-3xl" />
+          <div className="auth-orb-one absolute -right-32 -top-32 h-96 w-96 rounded-full bg-brand-500/40 blur-3xl" />
+          <div className="auth-orb-two absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-indigo-950/50 blur-3xl" />
 
           <div className="relative">
             <Link

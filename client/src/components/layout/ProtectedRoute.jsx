@@ -3,7 +3,7 @@ import {
   Outlet,
   useLocation,
 } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 
 const AppLoadingScreen = () => {
   return (

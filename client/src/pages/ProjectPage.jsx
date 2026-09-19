@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { getProjectById } from "../api/projectApi";
@@ -34,7 +34,7 @@ const ProjectPage = () => {
     membership?.role
   );
 
-  const loadProjectData = async () => {
+  const loadProjectData = useCallback(async () => {
     try {
       setError("");
 
@@ -58,11 +58,15 @@ const ProjectPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [projectId]);
 
   useEffect(() => {
-    loadProjectData();
-  }, [projectId]);
+    const loadTimer = window.setTimeout(() => {
+      void loadProjectData();
+    }, 0);
+
+    return () => window.clearTimeout(loadTimer);
+  }, [loadProjectData]);
 
   const taskStats = useMemo(() => {
     return {
@@ -189,7 +193,7 @@ const ProjectPage = () => {
       )}
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="p-4">
+        <Card className="metric-card p-4 text-slate-600">
           <p className="text-sm font-medium text-slate-500">
             Total tasks
           </p>
@@ -198,7 +202,7 @@ const ProjectPage = () => {
           </p>
         </Card>
 
-        <Card className="p-4">
+        <Card className="metric-card p-4 text-indigo-600">
           <p className="text-sm font-medium text-slate-500">
             Active work
           </p>
@@ -207,7 +211,7 @@ const ProjectPage = () => {
           </p>
         </Card>
 
-        <Card className="p-4">
+        <Card className="metric-card p-4 text-amber-600">
           <p className="text-sm font-medium text-slate-500">
             In review
           </p>
@@ -216,7 +220,7 @@ const ProjectPage = () => {
           </p>
         </Card>
 
-        <Card className="p-4">
+        <Card className="metric-card p-4 text-emerald-600">
           <p className="text-sm font-medium text-slate-500">
             Completed
           </p>
