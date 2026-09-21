@@ -76,6 +76,8 @@ model TeamMember {
   expiresAt  DateTime?
   isActive   Boolean   @default(true)
   joinedAt   DateTime  @default(now())
+  skills     String[]  @default([])
+  weeklyHours Int?
 
   team       Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -123,6 +125,8 @@ model Task {
   description    String?
   status         TaskStatus   @default(BACKLOG)
   priority       Int          @default(2)
+  requiredSkills String[]     @default([])
+  estimatedHours Float?
   dueDate        DateTime?
   pullRequestUrl String?
   createdAt      DateTime     @default(now())
@@ -188,4 +192,12 @@ model TaskActivity {
   actor       User?     @relation("ActivityActor", fields: [actorId], references: [id])
 
   @@index([taskId])
+}
+
+// Shared across server instances; no prompts, responses or API keys are stored.
+model AssistantQuota {
+  id           String    @id
+  used         Int       @default(0)
+  blockedUntil DateTime?
+  updatedAt    DateTime  @updatedAt
 }

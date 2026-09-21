@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Button from "../common/Button";
 import MemberSelector from "./MemberSelector";
+import SkillPicker from "../assistant/SkillPicker";
 
 const CreateTaskForm = ({
   onSubmit,
@@ -29,6 +30,8 @@ const CreateTaskForm = ({
       ? [developers[0].user.id]
       : [],
     reviewerIds: [],
+    requiredSkills: [],
+    estimatedHours: "",
   });
 
   const handleChange = (event) => {
@@ -50,6 +53,8 @@ const CreateTaskForm = ({
         : undefined,
       assigneeIds: formData.assigneeIds,
       reviewerIds: formData.reviewerIds,
+      requiredSkills: formData.requiredSkills,
+      estimatedHours: formData.estimatedHours === "" ? null : Number(formData.estimatedHours),
     });
   };
 
@@ -134,6 +139,15 @@ const CreateTaskForm = ({
             onChange={handleChange}
             className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
           />
+        </label>
+
+        <div className="md:col-span-2">
+          <SkillPicker label="Required skills (optional, helps the advisor)" value={formData.requiredSkills}
+            onChange={requiredSkills => setFormData(current => ({ ...current, requiredSkills }))} />
+        </div>
+        <label className="block md:col-span-2 text-sm font-semibold text-slate-700">Estimated total effort (hours, optional)
+          <input type="number" name="estimatedHours" min="0.25" max="10000" step="0.25" value={formData.estimatedHours}
+            onChange={handleChange} placeholder="e.g. 8" className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5 font-normal" />
         </label>
 
         <MemberSelector

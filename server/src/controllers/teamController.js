@@ -147,6 +147,8 @@ const getTeamMembers = async (req, res) => {
       expiresAt: true,
       isActive: true,
       joinedAt: true,
+      skills: true,
+      weeklyHours: true,
       user: {
         select: {
           id: true,

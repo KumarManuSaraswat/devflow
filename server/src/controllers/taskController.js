@@ -32,6 +32,8 @@ const createTask = async (req, res) => {
     dueDate,
     assigneeIds,
     reviewerIds,
+    requiredSkills,
+    estimatedHours,
   } = req.body;
 
   const { projectId } = req.params;
@@ -121,6 +123,8 @@ const createTask = async (req, res) => {
         title,
         description: description || null,
         priority,
+        requiredSkills,
+        estimatedHours: estimatedHours ?? null,
         dueDate: dueDate ? new Date(dueDate) : null,
         status: "ASSIGNED",
         assignees: {

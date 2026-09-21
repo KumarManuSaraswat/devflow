@@ -6,6 +6,7 @@ const getActiveMembership = async (teamId, userId) => {
       teamId,
       userId,
       isActive: true,
+      startsAt: { lte: new Date() },
       OR: [
         { expiresAt: null },
         { expiresAt: { gt: new Date() } },

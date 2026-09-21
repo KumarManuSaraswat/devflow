@@ -232,6 +232,10 @@
 }
 
 /* Pausing is global, including JS-driven demo playback; reduced motion always wins. */
+.assistant-answer { animation: reveal-up .45s var(--ease-flow); }
+.assistant-spark { animation: float 6s ease-in-out infinite; }
+.assistant-thinking { display: inline-block; animation: orbit 3s linear infinite; }
+
 html:has([data-motion="paused"]) { scroll-behavior: auto; }
 [data-motion="paused"] *, [data-motion="paused"] *::before, [data-motion="paused"] *::after {
   animation: none !important;

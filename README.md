@@ -19,6 +19,15 @@ DevFlow provides a focused workflow for assigning, reviewing, and completing wor
 
 ## Features
 
+### Planning assistant
+
+- Ask DevFlow about task owners, team size, workload and task breakdowns
+- Record member skills/availability and task skills/effort for grounded recommendations
+- Built-in advice without API keys; optional Gemini → Groq → built-in fallback
+- Server-only keys, explicit cloud consent, shared daily request caps and no automatic assignments
+
+See [assistant setup and zero-cost safeguards](docs/ASSISTANT_SETUP.md) before enabling cloud providers.
+
 ### Authentication and access control
 
 - User registration, login, logout, and persistent sessions
@@ -385,8 +394,7 @@ Test coverage includes authentication, team isolation, invitation rules, role re
 - Drag-and-drop Kanban board
 - Task comments and attachments
 - Dashboard analytics
-- AI task breakdown and review-summary assistant
-- Automated unit and integration tests
+- AI review summaries and richer dependency-aware planning
 - Dark mode
 
 ## Author

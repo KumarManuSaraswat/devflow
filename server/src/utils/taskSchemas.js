@@ -1,4 +1,5 @@
 const { z } = require("zod");
+const { skillsSchema, estimatedHoursSchema } = require("../assistant/schemas");
 
 const cuid = z.string().cuid("Invalid ID");
 
@@ -21,6 +22,8 @@ const createTaskSchema = z.object({
     dueDate: z.string().datetime().optional(),
     assigneeIds: z.array(cuid).min(1, "Assign at least one developer"),
     reviewerIds: z.array(cuid).default([]),
+    requiredSkills: skillsSchema.default([]),
+    estimatedHours: estimatedHoursSchema.optional(),
   }),
   params: z.object({
     projectId: cuid,
@@ -51,13 +54,17 @@ const updateTaskSchema = z.object({
       description: z.string().trim().max(5000).nullable().optional(),
       priority: z.coerce.number().int().min(1).max(4).optional(),
       dueDate: z.string().datetime().nullable().optional(),
+      requiredSkills: skillsSchema.optional(),
+      estimatedHours: estimatedHoursSchema.optional(),
     })
     .refine(
       (data) =>
         data.title !== undefined ||
         data.description !== undefined ||
         data.priority !== undefined ||
-        data.dueDate !== undefined,
+        data.dueDate !== undefined ||
+        data.requiredSkills !== undefined ||
+        data.estimatedHours !== undefined,
       {
         message: "Provide at least one field to update",
       }

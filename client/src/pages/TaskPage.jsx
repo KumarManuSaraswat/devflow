@@ -7,6 +7,7 @@ import Card from "../components/common/Card";
 import PageLoader from "../components/common/PageLoader";
 import TaskReviewActions from "../components/tasks/TaskReviewActions";
 import TaskStatusActions from "../components/tasks/TaskStatusActions";
+import TaskPlanning from "../components/assistant/TaskPlanning";
 import {
   PRIORITY_LABELS,
   PRIORITY_STYLES,
@@ -139,6 +140,8 @@ const TaskPage = () => {
           )}
         </div>
       </section>
+
+      <TaskPlanning key={task.id} task={task} canEdit={["OWNER", "ADMIN"].includes(membership?.role)} onUpdated={handleUpdated} />
 
       {error && (
         <div

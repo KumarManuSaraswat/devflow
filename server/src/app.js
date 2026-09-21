@@ -14,6 +14,8 @@ const {
 } = require("./routes/inviteRoutes");
 const projectRoutes = require("./routes/projectRoutes");
 const taskRoutes = require("./routes/taskRoutes");
+const { createAssistantRoutes } = require("./routes/assistantRoutes");
+const { authenticate } = require("./middleware/authenticate");
 const { notFound } = require("./middleware/notFound");
 const { errorHandler } = require("./middleware/errorHandler");
 
@@ -91,6 +93,7 @@ app.get("/api/health/ready", async (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/teams", teamRoutes);
+app.use("/api/teams/:teamId/assistant", createAssistantRoutes({ db: prisma, authenticate }));
 app.use("/api/invites", inviteRoutes);
 
 app.use(

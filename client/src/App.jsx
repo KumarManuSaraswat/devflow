@@ -12,6 +12,7 @@ import TeamMembersPage from "./pages/TeamMembersPage";
 import InvitePage from "./pages/InvitePage";
 import LandingPage from "./pages/LandingPage";
 import PageTransition from "./components/motion/PageTransition";
+import AssistantPage from "./pages/AssistantPage";
 
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
         </Route>
 
         <Route element={<AppLayout />}>
+          <Route path="/assistant" element={<AssistantPage />} />
           <Route path="/teams" element={<TeamsPage />} />
           <Route path="/teams/:teamId" element={<TeamPage />} />
           <Route

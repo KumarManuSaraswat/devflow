@@ -14,6 +14,8 @@ import Badge from "../components/common/Badge";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import PageLoader from "../components/common/PageLoader";
+import MemberSkills from "../components/assistant/MemberSkills";
+import { useAuth } from "../context/useAuth";
 
 const MEMBER_ROLES = [
   "ADMIN",
@@ -33,6 +35,7 @@ const getInitials = (name = "") => {
 
 const TeamMembersPage = () => {
   const { teamId } = useParams();
+  const { user } = useAuth();
 
   const [team, setTeam] = useState(null);
   const [membership, setMembership] = useState(null);
@@ -641,6 +644,10 @@ const TeamMembersPage = () => {
                     {member.role}
                   </Badge>
                 </div>
+
+                <MemberSkills teamId={teamId} member={member}
+                  canEdit={member.user.id === user?.id || isOwner || (canManageMembers && member.role !== "OWNER")}
+                  onUpdated={updated => setMembers(current => current.map(m => m.id === updated.id ? { ...m, ...updated } : m))} />
 
                 {member.expiresAt && (
                   <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
