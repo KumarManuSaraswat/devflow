@@ -225,7 +225,7 @@ const AppLayout = () => {
         <main className="mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:px-8 lg:py-8 lg:pb-20">
           <PageTransition />
         </main>
-        {pathname !== "/assistant" && <NavLink to="/assistant" aria-label="Open DevFlow planning assistant"
+        {pathname !== "/assistant" && !pathname.includes("/discussions/") && <NavLink to="/assistant" aria-label="Open DevFlow planning assistant"
           className="motion-button fixed bottom-18 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/50 bg-gradient-to-br from-brand-600 to-violet-600 text-xl text-white shadow-lg shadow-brand-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500">✦</NavLink>}
       </div>
     </div>

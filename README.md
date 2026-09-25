@@ -19,6 +19,16 @@ DevFlow provides a focused workflow for assigning, reviewing, and completing wor
 
 ## Features
 
+### Team discussions
+
+- Team-only topics for problems, feedback and general discussions
+- Persistent messages from any active team member, with automatic refresh
+- Creator/owner-controlled resolution and reopening, with visible completion markers
+- Open/resolved filters, topic categories, history pagination and resolution counts
+- Existing database only: no extra chat service or API key
+
+See [team discussion behavior, permissions and deployment](docs/TEAM_DISCUSSIONS.md).
+
 ### Planning assistant
 
 - Ask DevFlow about task owners, team size, workload and task breakdowns

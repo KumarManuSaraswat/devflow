@@ -13,6 +13,8 @@ import InvitePage from "./pages/InvitePage";
 import LandingPage from "./pages/LandingPage";
 import PageTransition from "./components/motion/PageTransition";
 import AssistantPage from "./pages/AssistantPage";
+import DiscussionsPage from "./pages/DiscussionsPage";
+import DiscussionPage from "./pages/DiscussionPage";
 
 const App = () => {
   return (
@@ -33,6 +35,8 @@ const App = () => {
           <Route path="/assistant" element={<AssistantPage />} />
           <Route path="/teams" element={<TeamsPage />} />
           <Route path="/teams/:teamId" element={<TeamPage />} />
+          <Route path="/teams/:teamId/discussions" element={<DiscussionsPage />} />
+          <Route path="/teams/:teamId/discussions/:topicId" element={<DiscussionPage />} />
           <Route
             path="/teams/:teamId/members"
             element={<TeamMembersPage />}

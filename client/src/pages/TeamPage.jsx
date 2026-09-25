@@ -11,6 +11,7 @@ import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import Modal from "../components/common/Modal";
 import PageLoader from "../components/common/PageLoader";
+import DiscussionOverview from "../components/discussions/DiscussionOverview";
 
 const TeamPage = () => {
   const { teamId } = useParams();
@@ -179,6 +180,7 @@ const TeamPage = () => {
           </div>
 
           <div className="flex flex-wrap gap-3">
+            <Link to={`/teams/${teamId}/discussions`} className="motion-button inline-flex items-center rounded-xl border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-700 hover:bg-brand-100">Team discussions</Link>
             <Link to={`/teams/${teamId}/members`}>
               <Button variant="secondary">
                 Manage members
@@ -344,6 +346,8 @@ const TeamPage = () => {
           </div>
         )}
       </section>
+
+      <DiscussionOverview key={teamId} teamId={teamId} />
 
       {isCreateOpen && (
         <Modal

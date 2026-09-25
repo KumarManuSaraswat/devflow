@@ -233,6 +233,7 @@
 
 /* Pausing is global, including JS-driven demo playback; reduced motion always wins. */
 .assistant-answer { animation: reveal-up .45s var(--ease-flow); }
+.discussion-message { animation: reveal-up .25s var(--ease-flow); }
 .assistant-spark { animation: float 6s ease-in-out infinite; }
 .assistant-thinking { display: inline-block; animation: orbit 3s linear infinite; }
 
