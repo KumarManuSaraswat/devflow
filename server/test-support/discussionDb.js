@@ -10,6 +10,8 @@ function matches(row, where) {
       if (op === "lt") return row[key] < expected;
       if (op === "gt") return row[key] > expected;
       if (op === "lte") return row[key] <= expected;
+      if (op === "not") return row[key] !== expected;
+      if (op === "in") return expected.includes(row[key]);
       return false;
     });
     return row[key] === value;
@@ -17,7 +19,7 @@ function matches(row, where) {
 }
 const project = (row, select) => row && Object.fromEntries(Object.keys(select || row).map(key => [key, row[key]]));
 function memoryDiscussionDb() {
-  let state = { topics: [], messages: [], memberships: users.map((user, index) => ({ teamId: id(10), userId: user.id,
+  let state = { topics: [], messages: [], notifications: [], devices: [], deliveries: [], memberships: users.map((user, index) => ({ teamId: id(10), userId: user.id,
     role: ["OWNER", "DEVELOPER", "ADMIN", "REVIEWER", "TRAINEE", "DEVELOPER"][index], isActive: index !== 5,
     startsAt: new Date("2020-01-01"), expiresAt: null })), counter: 100 };
   let queue = Promise.resolve();
@@ -29,7 +31,8 @@ function memoryDiscussionDb() {
   const db = {
     state: () => state,
     team: { findUnique: async () => ({ name: "Demo workspace" }) },
-    teamMember: { findFirst: async ({ where }) => state.memberships.find(m => matches(m, where)) || null },
+    teamMember: { findFirst: async ({ where }) => state.memberships.find(m => matches(m, where)) || null,
+      findMany: async ({ where }) => state.memberships.filter(m => matches(m, where)) },
     discussionTopic: {
       findFirst: async ({ where, select }) => viewTopic(state.topics.find(t => matches(t, where)), select) || null,
       findUnique: async ({ where, select }) => viewTopic(state.topics.find(t => matches(t, where.teamId_createdById_clientTopicId)), select) || null,
@@ -70,6 +73,55 @@ function memoryDiscussionDb() {
       queue = work.catch(() => {});
       return work;
     },
+  };
+  const notificationMatches = (row, where) => {
+    const { team, ...plain } = where;
+    return matches(row, plain) && (!team || state.memberships.some(m => m.teamId === row.teamId && matches(m, team.members.some)));
+  };
+  db.notification = {
+    createMany: async ({ data }) => {
+      for (const row of data) if (!state.notifications.some(n => n.userId === row.userId && n.eventKey === row.eventKey)) {
+        state.notifications.push({ id: id(++state.counter), createdAt: new Date(), readAt: null, ...row });
+      }
+    },
+    findMany: async ({ where, take, select }) => state.notifications.filter(n => notificationMatches(n, where))
+      .sort((a, b) => b.createdAt - a.createdAt || b.id.localeCompare(a.id)).slice(0, take).map(n => project(n, select)),
+    findFirst: async ({ where, select }) => project(state.notifications.find(n => notificationMatches(n, where)), select) || null,
+    count: async ({ where }) => state.notifications.filter(n => notificationMatches(n, where)).length,
+    updateMany: async ({ where, data }) => {
+      const rows = state.notifications.filter(n => notificationMatches(n, where)); rows.forEach(n => Object.assign(n, data)); return { count: rows.length };
+    },
+  };
+  db.pushDevice = {
+    findMany: async ({ where, select }) => state.devices.filter(d => matches(d, where)).map(d => project(d, select)),
+    findUnique: async ({ where }) => state.devices.find(d => matches(d, where)) || null,
+    count: async ({ where }) => state.devices.filter(d => matches(d, where)).length,
+    upsert: async ({ where, create, update, select }) => {
+      let row = state.devices.find(d => matches(d, where));
+      if (row) Object.assign(row, update);
+      else { row = { id: id(++state.counter), ...create }; state.devices.push(row); }
+      return project(row, select);
+    },
+    deleteMany: async ({ where }) => {
+      const rows = state.devices.filter(d => matches(d, where)); state.devices = state.devices.filter(d => !rows.includes(d));
+      state.deliveries = state.deliveries.filter(d => !rows.some(device => d.deviceId === device.id)); return { count: rows.length };
+    },
+  };
+  db.pushDelivery = {
+    createMany: async ({ data }) => { for (const row of data) if (!state.deliveries.some(d => d.notificationId === row.notificationId && d.deviceId === row.deviceId)) {
+      state.deliveries.push({ id: id(++state.counter), state: "PENDING", attempts: 0, lockedUntil: null, nextAttemptAt: new Date(), ...row });
+    } },
+    findMany: async ({ where, take, select }) => state.deliveries.filter(d => matches(d, where)).slice(0, take).map(d => project(d, select)),
+    findUnique: async ({ where }) => {
+      const row = state.deliveries.find(d => matches(d, where));
+      return row && { ...row, notification: state.notifications.find(n => n.id === row.notificationId), device: state.devices.find(d => d.id === row.deviceId) };
+    },
+    updateMany: async ({ where, data }) => {
+      const rows = state.deliveries.filter(d => matches(d, where));
+      rows.forEach(row => Object.entries(data).forEach(([key, value]) => { row[key] = value && typeof value === "object" && "increment" in value ? row[key] + value.increment : value; }));
+      return { count: rows.length };
+    },
+    deleteMany: async ({ where }) => { state.deliveries = state.deliveries.filter(d => !matches(d, where)); },
   };
   return db;
 }

@@ -1,4 +1,5 @@
 const { prisma } = require("../config/prisma");
+const { enqueueNotifications } = require("../notifications/events");
 
 const getActiveTeamMembersByUserIds = async (tx, teamId, userIds) => {
   if (userIds.length === 0) {
@@ -12,6 +13,7 @@ const getActiveTeamMembersByUserIds = async (tx, teamId, userIds) => {
         in: userIds,
       },
       isActive: true,
+      startsAt: { lte: new Date() },
       OR: [
         { expiresAt: null },
         { expiresAt: { gt: new Date() } },
@@ -180,6 +182,8 @@ const createTask = async (req, res) => {
       },
     });
 
+    await enqueueNotifications(tx, { teamId: project.teamId, actorId: req.user.id, recipientIds: uniqueAssigneeIds,
+      eventKey: `assigned:${createdTask.id}`, kind: "TASK_ASSIGNED", href: `/tasks/${createdTask.id}` });
     return createdTask;
   });
 
@@ -390,6 +394,8 @@ const updateTaskStatus = async (req, res) => {
     select: {
       id: true,
       status: true,
+      project: { select: { teamId: true } },
+      reviewers: { select: { userId: true } },
       assignees: {
         select: {
           userId: true,
@@ -435,7 +441,7 @@ const updateTaskStatus = async (req, res) => {
       },
     });
 
-    await tx.taskActivity.create({
+    const statusActivity = await tx.taskActivity.create({
       data: {
         taskId: updatedTask.id,
         actorId: req.user.id,
@@ -446,6 +452,12 @@ const updateTaskStatus = async (req, res) => {
         },
       },
     });
+
+    if (status === "IN_REVIEW" && currentTask.status !== status) {
+      await enqueueNotifications(tx, { teamId: currentTask.project.teamId, actorId: req.user.id,
+        recipientIds: currentTask.reviewers.map(reviewer => reviewer.userId), eventKey: `review-request:${statusActivity.id}`,
+        kind: "REVIEW_REQUESTED", href: `/tasks/${updatedTask.id}` });
+    }
 
     return updatedTask;
   });
@@ -491,6 +503,7 @@ const submitTaskForReview = async (req, res) => {
       id: req.task.id,
     },
     include: {
+      project: { select: { teamId: true } },
       assignees: {
         select: {
           userId: true,
@@ -548,7 +561,7 @@ const submitTaskForReview = async (req, res) => {
       data,
     });
 
-    await tx.taskActivity.create({
+    const reviewActivity = await tx.taskActivity.create({
       data: {
         taskId: submittedTask.id,
         actorId: req.user.id,
@@ -561,6 +574,9 @@ const submitTaskForReview = async (req, res) => {
       },
     });
 
+    await enqueueNotifications(tx, { teamId: task.project.teamId, actorId: req.user.id,
+      recipientIds: task.reviewers.map(reviewer => reviewer.userId), eventKey: `review-request:${reviewActivity.id}`,
+      kind: "REVIEW_REQUESTED", href: `/tasks/${submittedTask.id}` });
     return submittedTask;
   });
 
@@ -579,6 +595,8 @@ const reviewTask = async (req, res) => {
       id: req.task.id,
     },
     include: {
+      project: { select: { teamId: true } },
+      assignees: { select: { userId: true } },
       reviewers: {
         select: {
           userId: true,
@@ -641,6 +659,9 @@ const reviewTask = async (req, res) => {
       },
     });
 
+    await enqueueNotifications(tx, { teamId: task.project.teamId, actorId: req.user.id,
+      recipientIds: task.assignees.map(assignee => assignee.userId), eventKey: `feedback:${review.id}`,
+      kind: "TASK_FEEDBACK", href: `/tasks/${reviewedTask.id}` });
     return reviewedTask;
   });
 

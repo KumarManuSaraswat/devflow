@@ -1,4 +1,5 @@
 const person = { id: true, name: true, avatarUrl: true };
+const { enqueueNotifications } = require("../notifications/events");
 const topicSelect = { id: true, teamId: true, title: true, category: true, status: true,
   createdById: true, createdBy: { select: person }, resolvedBy: { select: person }, resolvedAt: true,
   createdAt: true, updatedAt: true, messageCount: true, version: true };
@@ -57,10 +58,16 @@ function createDiscussionService(db) {
       const existing = await replay();
       if (existing) return existing;
       try {
-        const topic = await db.discussionTopic.create({ data: { teamId, createdById: userId,
+        const topic = await db.$transaction(async tx => {
+          const created = await tx.discussionTopic.create({ data: { teamId, createdById: userId,
           title: input.title, category: input.category, clientTopicId: input.clientTopicId, messageCount: 1, version: 1,
           messages: { create: { authorId: userId, body: input.body, sequence: 1, clientMessageId: input.clientTopicId } },
         }, select: topicSelect });
+          await enqueueNotifications(tx, { teamId, actorId: userId, eventKey: `topic:${created.id}`,
+            kind: input.category === "FEEDBACK" ? "FEEDBACK_CREATED" : "DISCUSSION_CREATED",
+            href: `/teams/${teamId}/discussions/${created.id}` });
+          return created;
+        });
         return { topic, replayed: false };
       } catch (error) {
         if (error.code === "P2002") { const found = await replay(); if (found) return found; }
@@ -104,6 +111,8 @@ function createDiscussionService(db) {
           const topic = await requireTopic(tx, teamId, topicId);
           const message = await tx.discussionMessage.create({ data: { topicId, authorId: userId, body: input.body,
             clientMessageId: input.clientMessageId, sequence: topic.messageCount }, select: messageSelect });
+          await enqueueNotifications(tx, { teamId, actorId: userId, eventKey: `message:${message.id}`,
+            kind: "DISCUSSION_MESSAGE", href: `/teams/${teamId}/discussions/${topicId}` });
           return { message, replayed: false };
         });
       } catch (error) {
@@ -122,6 +131,9 @@ function createDiscussionService(db) {
           data: { status: input.status, resolvedById: input.status === "RESOLVED" ? userId : null,
             resolvedAt: input.status === "RESOLVED" ? new Date() : null, version: { increment: 1 } } });
         if (!updated.count) fail(409, "This discussion changed. Read the latest messages, then try again.");
+        if (input.status === "RESOLVED") await enqueueNotifications(tx, { teamId, actorId: userId,
+          eventKey: `resolved:${topicId}:${topic.version + 1}`, kind: "DISCUSSION_RESOLVED",
+          href: `/teams/${teamId}/discussions/${topicId}` });
         return { topic: await requireTopic(tx, teamId, topicId) };
       });
     },

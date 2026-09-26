@@ -1,9 +1,12 @@
 require("dotenv").config();
 
 const app = require("./app");
+const { prisma } = require("./config/prisma");
+const { createPushWorker } = require("./notifications/worker");
 
 const port = process.env.PORT || 5000;
 
 app.listen(port, () => {
   console.log(`DevFlow API running on port ${port}`);
+  createPushWorker({ db: prisma }).start();
 });

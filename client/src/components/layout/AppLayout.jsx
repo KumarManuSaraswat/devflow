@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import Button from "../common/Button";
 import PageTransition from "../motion/PageTransition";
+import { toast } from "sonner";
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
@@ -24,7 +25,8 @@ const AppLayout = () => {
 
   const handleLogout = async () => {
     closeMobileMenu();
-    await logout();
+    try { await logout(); }
+    catch { toast.error("Could not safely disconnect this device. Check your connection and try logging out again."); }
   };
 
   useEffect(() => {
@@ -81,6 +83,7 @@ const AppLayout = () => {
           <NavLink to="/assistant" className={linkClass}>
             <span className="mr-3 text-base" aria-hidden="true">✦</span>Ask DevFlow
           </NavLink>
+          <NavLink to="/notifications" className={linkClass}><span className="mr-3" aria-hidden="true">◉</span>Notifications</NavLink>
         </nav>
 
         <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-slate-200/80 bg-white/75 p-3 shadow-sm backdrop-blur">
@@ -117,6 +120,7 @@ const AppLayout = () => {
             </span>
           </NavLink>
 
+          <LinkNotifications />
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(true)}
@@ -192,6 +196,7 @@ const AppLayout = () => {
           <NavLink to="/assistant" className={linkClass} onClick={closeMobileMenu}>
             <span className="mr-3 text-base" aria-hidden="true">✦</span>Ask DevFlow
           </NavLink>
+          <NavLink to="/notifications" className={linkClass} onClick={closeMobileMenu}><span className="mr-3" aria-hidden="true">◉</span>Notifications</NavLink>
         </nav>
 
         <div className="mt-auto rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -225,7 +230,7 @@ const AppLayout = () => {
         <main className="mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:px-8 lg:py-8 lg:pb-20">
           <PageTransition />
         </main>
-        {pathname !== "/assistant" && !pathname.includes("/discussions/") && <NavLink to="/assistant" aria-label="Open DevFlow planning assistant"
+        {pathname !== "/assistant" && !pathname.startsWith("/notifications") && !pathname.includes("/discussions/") && <NavLink to="/assistant" aria-label="Open DevFlow planning assistant"
           className="motion-button fixed bottom-18 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/50 bg-gradient-to-br from-brand-600 to-violet-600 text-xl text-white shadow-lg shadow-brand-500/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500">✦</NavLink>}
       </div>
     </div>
@@ -233,3 +238,9 @@ const AppLayout = () => {
 };
 
 export default AppLayout;
+
+function LinkNotifications() {
+  return <NavLink to="/notifications" aria-label="Open notifications" className="ml-auto mr-3 rounded-xl border border-slate-200 bg-brand-50 p-2.5 text-brand-700">
+    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+  </NavLink>;
+}

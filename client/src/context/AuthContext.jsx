@@ -6,6 +6,7 @@ import {
   registerUser,
 } from "../api/authApi";
 import { AuthContext } from "./appAuthContext";
+import { disablePhoneAlerts } from "../mobile/push";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -39,6 +40,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    if (user) await disablePhoneAlerts(user.id);
     await logoutUser();
     setUser(null);
   };

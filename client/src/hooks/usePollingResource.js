@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // load/merge must be stable callbacks. Key the consuming component when changing its scope.
 export default function usePollingResource(load, { interval = 10000, merge } = {}) {
   const [data, setData] = useState(null);
-  const [error, setError] = useState(() => navigator.onLine ? null : { message: "You're offline. Reconnect to load discussions.", denied: false });
+  const [error, setError] = useState(() => navigator.onLine ? null : { message: "You're offline. Reconnect to load updates.", denied: false });
   const value = useRef(null);
   const active = useRef(false);
   const request = useRef(null);
@@ -27,7 +27,7 @@ export default function usePollingResource(load, { interval = 10000, merge } = {
       if (!controller.signal.aborted && active.current) {
         const denied = [401, 403, 404].includes(err.response?.status);
         if (denied) mutate(null);
-        setError({ message: err.response?.data?.message || "Unable to sync discussions. Check your connection and try again.", denied });
+        setError({ message: err.response?.data?.message || "Unable to sync updates. Check your connection and try again.", denied });
       }
     }
   }, [load, merge, mutate]);

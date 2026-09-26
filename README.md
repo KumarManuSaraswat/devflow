@@ -19,6 +19,15 @@ DevFlow provides a focused workflow for assigning, reviewing, and completing wor
 
 ## Features
 
+### Android app and notifications
+
+- Android project sharing the existing accounts and mobile-friendly workspace
+- Notification inbox for task assignments, review feedback and team discussions
+- Opt-in Firebase phone alerts with private lock-screen text and authenticated tap navigation
+- Persistent delivery queue using the existing backend/database
+
+See [Android build, Firebase setup, rollout and testing](docs/ANDROID_APP.md). Firebase configuration and a signed APK build are required before distribution; phone delivery has not yet been device-tested.
+
 ### Team discussions
 
 - Team-only topics for problems, feedback and general discussions

@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+.native-app { overscroll-behavior-y: none; }
+.native-app body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+.native-app input, .native-app textarea, .native-app select { font-size: max(16px, 1em); }
+
 @theme {
   --color-brand-50: #eef7ff;
   --color-brand-100: #d9edff;

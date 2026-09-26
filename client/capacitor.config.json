@@ -1,0 +1,13 @@
+{
+  "appId": "com.devflow.team",
+  "appName": "DevFlow",
+  "webDir": "dist-android",
+  "loggingBehavior": "debug",
+  "server": { "hostname": "localhost", "androidScheme": "https", "cleartext": false },
+  "android": { "allowMixedContent": false, "backgroundColor": "#f8fafc" },
+  "plugins": {
+    "SystemBars": { "insetsHandling": "native", "initialViewportFitValueHint": "auto" },
+    "CapacitorHttp": { "enabled": true },
+    "PushNotifications": { "presentationOptions": [] }
+  }
+}

@@ -1,4 +1,6 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { isAndroid } from "./mobile/push";
+import NotificationsPage, { NotificationRedirect } from "./pages/NotificationsPage";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/LoginPage";
@@ -20,7 +22,7 @@ const App = () => {
   return (
     <Routes>
       <Route element={<PageTransition />}>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={isAndroid ? <Navigate to="/teams" replace /> : <LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="*" element={<NotFoundPage />} />
@@ -33,6 +35,8 @@ const App = () => {
 
         <Route element={<AppLayout />}>
           <Route path="/assistant" element={<AssistantPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/notifications/:notificationId" element={<NotificationRedirect />} />
           <Route path="/teams" element={<TeamsPage />} />
           <Route path="/teams/:teamId" element={<TeamPage />} />
           <Route path="/teams/:teamId/discussions" element={<DiscussionsPage />} />

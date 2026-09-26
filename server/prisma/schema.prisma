@@ -64,6 +64,8 @@ model User {
   discussionTopics DiscussionTopic[] @relation("TopicCreator")
   resolvedTopics DiscussionTopic[] @relation("TopicResolver")
   discussionMessages DiscussionMessage[]
+  notifications Notification[]
+  pushDevices PushDevice[]
 }
 
 model Team {
@@ -80,6 +82,7 @@ model Team {
   projects    Project[]
   invites     TeamInvite[]
   discussions DiscussionTopic[]
+  notifications Notification[]
 }
 
 model TeamMember {
@@ -256,4 +259,50 @@ model DiscussionMessage {
 
   @@unique([topicId, sequence])
   @@unique([topicId, authorId, clientMessageId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  teamId    String
+  eventKey  String
+  kind      String
+  href      String
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  deliveries PushDelivery[]
+
+  @@unique([userId, eventKey])
+  @@index([userId, createdAt, id])
+}
+
+model PushDevice {
+  id         String   @id @default(cuid())
+  userId     String
+  token      String   @unique
+  updatedAt  DateTime @updatedAt
+  expiresAt  DateTime
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries PushDelivery[]
+
+  @@index([userId])
+}
+
+// Durable outbox: notification creation commits alongside its task/message.
+model PushDelivery {
+  id             String   @id @default(cuid())
+  notificationId String
+  deviceId       String
+  state          String   @default("PENDING")
+  attempts       Int      @default(0)
+  nextAttemptAt  DateTime @default(now())
+  lockedUntil    DateTime?
+  lastErrorCode  String?
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  device         PushDevice   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, deviceId])
+  @@index([state, nextAttemptAt])
 }
