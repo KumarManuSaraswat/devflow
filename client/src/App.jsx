@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import RegisterPage from "./pages/RegisterPage";
 import TeamPage from "./pages/TeamPage";
+import TeamReportPage from './pages/TeamReportPage';
 import TeamsPage from "./pages/TeamsPage";
 import ProjectPage from "./pages/ProjectPage";
 import TaskPage from "./pages/TaskPage";
@@ -39,6 +40,7 @@ const App = () => {
           <Route path="/notifications/:notificationId" element={<NotificationRedirect />} />
           <Route path="/teams" element={<TeamsPage />} />
           <Route path="/teams/:teamId" element={<TeamPage />} />
+          <Route path="/teams/:teamId/report" element={<TeamReportPage />} />
           <Route path="/teams/:teamId/discussions" element={<DiscussionsPage />} />
           <Route path="/teams/:teamId/discussions/:topicId" element={<DiscussionPage />} />
           <Route

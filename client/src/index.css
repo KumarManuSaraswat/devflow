@@ -241,6 +241,27 @@
 .assistant-spark { animation: float 6s ease-in-out infinite; }
 .assistant-thinking { display: inline-block; animation: orbit 3s linear infinite; }
 
+/* Native WebView: keep brief interaction feedback, but avoid continuously
+   compositing a moving full-screen gradient through blurred fixed surfaces. */
+.native-app { scroll-behavior: auto; }
+.native-app .app-shell { display: flex; flex-direction: column; height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)); min-height: 0; overflow: hidden; }
+.native-app .app-shell::before { content: none; }
+.native-app .app-mobile-header { position: relative; flex-shrink: 0; background: #fff; backdrop-filter: none; }
+.native-app .app-content { flex: 1; min-height: 0; }
+.native-app .app-scroll { height: 100%; overflow-y: auto; overscroll-behavior-y: contain; touch-action: manipulation; }
+.native-app .app-shell[data-menu-open="true"] .app-scroll { overflow-y: hidden; }
+.native-app .motion-control { background: #0f172a; backdrop-filter: none; }
+.native-app .modal-backdrop { backdrop-filter: none; }
+.native-app .brand-mark, .native-app .assistant-spark { animation: none; }
+.native-app .page-transition { animation-duration: .18s; }
+.native-app .page-transition > div > section, .native-app .discussion-message { animation: none; }
+/* No independently scrolling chat boxes on a phone: a swipe on a bubble,
+   heading or blank area belongs to the same page, with native fling inertia.
+   Do not cancel touch events or restrict pan-x (the task board needs it). */
+.native-app .discussion-scroll, .native-app .assistant-scroll { max-height: none; overflow: visible; overscroll-behavior: auto; }
+.native-app .modal-panel, .native-app .modal-content { max-height: none; overflow: visible; }
+.native-app .modal-backdrop { overscroll-behavior: contain; touch-action: manipulation; }
+
 html:has([data-motion="paused"]) { scroll-behavior: auto; }
 [data-motion="paused"] *, [data-motion="paused"] *::before, [data-motion="paused"] *::after {
   animation: none !important;

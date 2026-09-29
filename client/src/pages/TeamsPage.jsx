@@ -8,12 +8,14 @@ import Modal from "../components/common/Modal";
 import PageLoader from "../components/common/PageLoader";
 import { useAuth } from "../context/useAuth";
 import { createTeam, getMyTeams } from "../api/teamApi";
+import { resourceCache } from "../utils/resourceCache";
 
 const TeamsPage = () => {
   const { user } = useAuth();
 
-  const [teams, setTeams] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [cached] = useState(() => resourceCache.read('teams'));
+  const [teams, setTeams] = useState(cached?.teams || []);
+  const [isLoading, setIsLoading] = useState(!cached);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -26,12 +28,15 @@ const TeamsPage = () => {
   });
 
   const loadTeams = useCallback(async () => {
+    const ticket = resourceCache.ticket();
     try {
       setError("");
 
       const response = await getMyTeams();
+      resourceCache.write('teams', response, ticket);
       setTeams(response.teams || []);
     } catch (err) {
+      if ([401, 403, 404].includes(err.response?.status)) setTeams([]);
       setError(
         err.response?.data?.message ||
           "Unable to load your teams. Please refresh the page."

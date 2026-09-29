@@ -7,12 +7,14 @@ import { DISCUSSION_CATEGORIES, discussionTime, mergeDiscussion, mergeMessages }
 import Button from "../components/common/Button";
 import PageLoader from "../components/common/PageLoader";
 import DiscussionStatus from "../components/discussions/DiscussionStatus";
+import DiscussionMessages from "../components/discussions/DiscussionMessages";
+import { discussionScrollContainer, isNearScrollEnd } from "../utils/scrolling";
 
 function Discussion({ teamId, topicId }) {
   const { user } = useAuth();
   const load = useCallback((signal, previous) => getDiscussion(teamId, topicId,
     previous?.messages.length ? { after: previous.messages.at(-1).sequence } : {}, signal), [teamId, topicId]);
-  const { data, error, refresh, mutate } = usePollingResource(load, { merge: mergeDiscussion });
+  const { data, error, refresh, mutate } = usePollingResource(load, { merge: mergeDiscussion, cacheKey: `discussion:${teamId}:${topicId}` });
   const [body, setBody] = useState("");
   const [action, setAction] = useState("");
   const [actionError, setActionError] = useState("");
@@ -26,14 +28,26 @@ function Discussion({ teamId, topicId }) {
   const initialScroll = useRef(true);
   const [newMessages, setNewMessages] = useState(false);
   const newest = data?.messages.at(-1)?.sequence;
+  const loaded = Boolean(data);
   useEffect(() => () => { writeRequest.current?.abort(); olderRequest.current?.abort(); }, []);
   useEffect(() => {
-    const box = messagesBox.current;
+    const box = discussionScrollContainer(messagesBox.current);
     if (box && (initialScroll.current || followLatest.current)) {
       box.scrollTop = box.scrollHeight;
       initialScroll.current = false;
     }
   }, [newest]);
+  useEffect(() => {
+    const box = discussionScrollContainer(messagesBox.current);
+    if (!box) return;
+    const onScroll = () => {
+      const atLatest = isNearScrollEnd(box);
+      followLatest.current = atLatest;
+      setNewMessages(current => current === !atLatest ? current : !atLatest);
+    };
+    box.addEventListener('scroll', onScroll, { passive: true });
+    return () => box.removeEventListener('scroll', onScroll);
+  }, [loaded]);
 
   async function send(event) {
     event.preventDefault();
@@ -72,7 +86,9 @@ function Discussion({ teamId, topicId }) {
     if (olderBusy || !data?.messages.length) return;
     setOlderBusy(true); setActionError("");
     const controller = new AbortController(); olderRequest.current = controller;
-    const anchor = messagesBox.current;
+    const anchor = discussionScrollContainer(messagesBox.current);
+    const firstMessage = messagesBox.current?.querySelector('.discussion-message');
+    const messageTop = firstMessage?.getBoundingClientRect().top;
     const oldHeight = anchor?.scrollHeight || 0;
     const oldTop = anchor?.scrollTop || 0;
     followLatest.current = false;
@@ -80,12 +96,18 @@ function Discussion({ teamId, topicId }) {
       const result = await getDiscussion(teamId, topicId, { before: data.messages[0].sequence }, controller.signal);
       if (controller.signal.aborted) return;
       mutate(current => current ? { ...current, messages: mergeMessages(result.messages, current.messages), hasOlder: result.hasOlder } : current);
-      requestAnimationFrame(() => { if (anchor) anchor.scrollTop = oldTop + anchor.scrollHeight - oldHeight; });
+      requestAnimationFrame(() => {
+        if (!anchor?.isConnected) return;
+        // Track the actual bubble, not page height: the composer/status below
+        // it can change height while older history is being loaded.
+        if (firstMessage?.isConnected) anchor.scrollTop += firstMessage.getBoundingClientRect().top - messageTop;
+        else anchor.scrollTop = oldTop + anchor.scrollHeight - oldHeight;
+      });
     } catch (err) { if (!controller.signal.aborted) setActionError(err.response?.data?.message || "Unable to load earlier messages."); }
     finally { if (!controller.signal.aborted) setOlderBusy(false); }
   }
   function scrollToLatest() {
-    const box = messagesBox.current;
+    const box = discussionScrollContainer(messagesBox.current);
     if (box) box.scrollTop = box.scrollHeight;
     followLatest.current = true; setNewMessages(false);
   }
@@ -105,22 +127,9 @@ function Discussion({ teamId, topicId }) {
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-label="Discussion chat">
         <p role="status" className="sr-only">{data.topic.messageCount} messages. Topic {data.topic.status === "OPEN" ? "open" : "resolved"}.</p>
         <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-5 py-3"><h2 className="text-sm font-bold text-slate-800">Conversation</h2><span className="text-xs text-slate-500">{error ? "Sync interrupted" : "Auto-refresh · 10s"}</span></div>
-        <div ref={messagesBox} className="max-h-[60vh] min-h-64 overflow-y-auto overscroll-contain bg-slate-50/60 p-4 sm:p-6" onScroll={event => {
-          const box = event.currentTarget;
-          followLatest.current = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
-          setNewMessages(!followLatest.current);
-        }}>
+        <div ref={messagesBox} className="discussion-scroll max-h-[60vh] min-h-64 overflow-y-auto overscroll-contain bg-slate-50/60 p-4 sm:p-6">
           {data.hasOlder && <div className="mb-5 text-center"><Button variant="secondary" onClick={loadOlder} disabled={olderBusy}>{olderBusy ? "Loading…" : "Load earlier messages"}</Button></div>}
-          <ol className="space-y-5" aria-label="Messages">{data.messages.map(message => {
-            const own = message.author.id === user?.id;
-            return <li key={message.id} className={`discussion-message flex gap-2 sm:gap-3 ${own ? "flex-row-reverse" : ""}`}>
-              <span aria-hidden="true" className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${own ? "bg-brand-100 text-brand-700" : "bg-violet-100 text-violet-700"}`}>{message.author.name.slice(0, 1).toUpperCase()}</span>
-              <article className={`min-w-0 max-w-[85%] rounded-2xl border px-4 py-3 ${own ? "rounded-tr-sm border-brand-200 bg-brand-50" : "rounded-tl-sm border-slate-200 bg-white"}`}>
-                <header className="mb-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs"><span className="break-words font-bold text-slate-800">{message.author.name}{own ? " (you)" : ""}</span><time dateTime={message.createdAt} className="text-slate-500">{discussionTime(message.createdAt)}</time></header>
-                <p className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-700 [overflow-wrap:anywhere]">{message.body}</p>
-              </article>
-            </li>;
-          })}</ol>
+          <DiscussionMessages messages={data.messages} userId={user?.id} />
         </div>
         {newMessages && <div className="border-t border-slate-100 px-5 py-2"><button type="button" onClick={scrollToLatest} className="text-xs font-semibold text-brand-700">↓ Jump to latest messages</button></div>}
         <div className="border-t border-slate-200 p-4 sm:p-5">

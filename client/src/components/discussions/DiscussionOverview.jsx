@@ -5,7 +5,7 @@ import usePollingResource from "../../hooks/usePollingResource";
 
 export default function DiscussionOverview({ teamId }) {
   const load = useCallback(signal => listDiscussions(teamId, {}, signal), [teamId]);
-  const { data, error } = usePollingResource(load, { interval: 20000 });
+  const { data, error } = usePollingResource(load, { interval: 20000, cacheKey: `overview:${teamId}` });
   return <section className="relative overflow-hidden rounded-2xl border border-brand-200/60 bg-gradient-to-br from-brand-50 via-white to-violet-50 p-5 sm:p-6">
     <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
       <div><p className="text-xs font-bold uppercase tracking-widest text-brand-600">Talk it through. Move it forward.</p>

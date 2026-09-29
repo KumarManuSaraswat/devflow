@@ -7,6 +7,7 @@ import {
 } from "../api/authApi";
 import { AuthContext } from "./appAuthContext";
 import { disablePhoneAlerts } from "../mobile/push";
+import { resourceCache } from "../utils/resourceCache";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -16,8 +17,10 @@ export const AuthProvider = ({ children }) => {
     const loadCurrentUser = async () => {
       try {
         const response = await getCurrentUser();
+        resourceCache.scope(response.user.id);
         setUser(response.user);
       } catch {
+        resourceCache.scope(null);
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -29,12 +32,14 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const response = await loginUser(credentials);
+    resourceCache.scope(response.user.id);
     setUser(response.user);
     return response;
   };
 
   const register = async (formData) => {
     const response = await registerUser(formData);
+    resourceCache.scope(response.user.id);
     setUser(response.user);
     return response;
   };
@@ -42,6 +47,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     if (user) await disablePhoneAlerts(user.id);
     await logoutUser();
+    resourceCache.scope(null);
     setUser(null);
   };
 

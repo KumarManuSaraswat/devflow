@@ -45,7 +45,7 @@ function Inbox({ cursor, setCursor }) {
     const { data } = await api.get('/notifications', { signal, params: cursor ? { before: cursor } : {} });
     return { ...settings, ...data };
   }, [cursor]);
-  const { data, error, refresh } = usePollingResource(load, { interval: 30000 });
+  const { data, error, refresh } = usePollingResource(load, { interval: 30000, cacheKey: `inbox:${cursor || 'latest'}` });
   useEffect(() => {
     const received = () => { void refresh(); };
     window.addEventListener('devflow:notification-received', received);

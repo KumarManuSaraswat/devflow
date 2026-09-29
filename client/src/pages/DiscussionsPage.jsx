@@ -49,7 +49,7 @@ function NewTopic({ teamId, onCancel }) {
 
 function TopicList({ teamId, status, category, cursor, onOlder, onNewest }) {
   const load = useCallback(signal => listDiscussions(teamId, { status, category, cursor: cursor || undefined }, signal), [teamId, status, category, cursor]);
-  const { data, error, refresh } = usePollingResource(load, { interval: 15000 });
+  const { data, error, refresh } = usePollingResource(load, { interval: 15000, cacheKey: JSON.stringify(['topics', teamId, status, category, cursor]) });
   if (!data && !error) return <PageLoader text="Loading team discussions…" />;
   return <div className="space-y-5">
     {error && <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">{error.message} <button type="button" onClick={refresh} className="ml-2 font-bold underline">Retry</button></div>}

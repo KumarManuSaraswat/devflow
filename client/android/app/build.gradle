@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+def releaseStore = System.getenv('DEVFLOW_SIGNING_STORE')
+
 android {
     namespace = "com.devflow.team"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +9,8 @@ android {
         applicationId "com.devflow.team"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 5
+        versionName "1.0.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,11 +18,29 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (releaseStore) {
+                storeFile file(releaseStore)
+                storePassword System.getenv('DEVFLOW_SIGNING_PASSWORD')
+                keyAlias 'devflow-release'
+                keyPassword System.getenv('DEVFLOW_SIGNING_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            debuggable false
+            if (releaseStore) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    if (!releaseStore && graph.allTasks.any { it.path in [':app:assembleRelease', ':app:bundleRelease'] }) {
+        throw new GradleException('Use npm run android:release to build a signed release. Signing credentials are required.')
     }
 }
 

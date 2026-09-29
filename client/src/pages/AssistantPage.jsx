@@ -5,6 +5,7 @@ import { askAssistant, getAssistantContext } from "../api/assistantApi";
 import Button from "../components/common/Button";
 import PageLoader from "../components/common/PageLoader";
 import SkillPicker from "../components/assistant/SkillPicker";
+import { resourceCache } from "../utils/resourceCache";
 
 const field = "mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-4 focus:ring-brand-100 disabled:opacity-60";
 const starters = [
@@ -27,7 +28,15 @@ function Answer({ result }) {
       <span className="text-brand-700">✦ DevFlow</span>
       <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-600">{result.source === "builtin" ? "Built-in advisor" : result.source === "gemini" ? "Gemini" : "Groq"}</span>
     </div>
-    <p className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-700">{result.answer}</p>
+    <p className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-700">{result.structuredAdvice?.summary || result.answer}</p>
+    {!!result.structuredAdvice?.nextSteps?.length && <section className="mt-4" aria-label="Suggested next steps">
+      <h3 className="text-sm font-semibold text-slate-900">Suggested next steps</h3>
+      <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm leading-6 text-slate-700">{result.structuredAdvice.nextSteps.map((step, index) => <li className="break-words" key={index}>{step}</li>)}</ol>
+    </section>}
+    {!!result.structuredAdvice?.questions?.length && <section className="mt-4 rounded-xl bg-brand-50 p-3" aria-label="Questions to clarify">
+      <h3 className="text-sm font-semibold text-brand-900">Questions to clarify</h3>
+      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-brand-900">{result.structuredAdvice.questions.map((question, index) => <li className="break-words" key={index}>{question}</li>)}</ul>
+    </section>}
     {!!result.recommendations?.length && <div className="mt-5 border-t border-slate-100 pt-4">
       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Skill & workload matches · calculated by DevFlow</h3>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -127,7 +136,7 @@ function Chat({ team, context, initialProject, initialTask }) {
         </div>
         {!!messages.length && <Button variant="ghost" disabled={busy} onClick={() => setMessages([])} className="px-2 text-xs">Clear chat</Button>}
       </div>
-      <div className="max-h-[65vh] min-h-80 overflow-y-auto overscroll-contain p-4 sm:p-6" aria-busy={busy}>
+      <div className="assistant-scroll max-h-[65vh] min-h-80 overflow-y-auto overscroll-contain p-4 sm:p-6" aria-busy={busy}>
         {!messages.length && <div className="py-6">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-600">A little clarity goes a long way</p>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">What are we building together?</h2>
@@ -167,12 +176,17 @@ function Chat({ team, context, initialProject, initialTask }) {
 }
 
 function TeamSession({ team, initialProject, initialTask }) {
-  const [context, setContext] = useState(null);
+  const [context, setContext] = useState(() => resourceCache.read(`assistant:${team.id}`));
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
-    getAssistantContext(team.id, controller.signal).then(setContext).catch(err => {
+    const ticket = resourceCache.ticket();
+    getAssistantContext(team.id, controller.signal).then(data => {
+      if (controller.signal.aborted) return;
+      resourceCache.write(`assistant:${team.id}`, data, ticket);
+      setContext(data);
+    }).catch(err => {
       if (!controller.signal.aborted) setError(err.response?.data?.message || "Unable to load team context.");
     });
     return () => controller.abort();
@@ -185,12 +199,17 @@ function TeamSession({ team, initialProject, initialTask }) {
 
 export default function AssistantPage() {
   const [params] = useSearchParams();
-  const [teams, setTeams] = useState(null);
+  const [teams, setTeams] = useState(() => resourceCache.read('teams')?.teams || null);
   const [selectedTeam, setSelectedTeam] = useState(params.get("team") || "");
   const [error, setError] = useState("");
   useEffect(() => {
     const controller = new AbortController();
-    api.get("/teams", { signal: controller.signal }).then(({ data }) => setTeams(data.teams)).catch(err => {
+    const ticket = resourceCache.ticket();
+    api.get("/teams", { signal: controller.signal }).then(({ data }) => {
+      if (controller.signal.aborted) return;
+      resourceCache.write('teams', data, ticket);
+      setTeams(data.teams);
+    }).catch(err => {
       if (!controller.signal.aborted) setError(err.response?.data?.message || "Unable to load your teams.");
     });
     return () => controller.abort();

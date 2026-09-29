@@ -33,7 +33,7 @@ const Modal = ({
             </button>
           </div>
 
-          <div className="max-h-[calc(100dvh-7rem)] overflow-y-auto p-5 sm:max-h-[calc(100dvh-8rem)] sm:p-6">
+          <div className="modal-content max-h-[calc(100dvh-7rem)] overflow-y-auto p-5 sm:max-h-[calc(100dvh-8rem)] sm:p-6">
             {children}
           </div>
         </div>

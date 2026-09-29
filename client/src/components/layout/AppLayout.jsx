@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import Button from "../common/Button";
@@ -10,6 +10,15 @@ const AppLayout = () => {
   const { pathname } = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] =
     useState(false);
+  const pageScroll = useRef(null);
+
+  useLayoutEffect(() => {
+    // Native pages share this viewport; a new route must not inherit the
+    // previous screen's offset. Desktop still uses normal document scrolling.
+    if (document.documentElement.classList.contains("native-app")) {
+      pageScroll.current?.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [pathname]);
 
   const linkClass = ({ isActive }) =>
     [
@@ -44,17 +53,16 @@ const AppLayout = () => {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = isMobileMenuOpen
-      ? "hidden"
-      : "";
-
+    if (!isMobileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousOverflow;
     };
   }, [isMobileMenuOpen]);
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-menu-open={isMobileMenuOpen}>
       <aside className="app-sidebar fixed inset-y-0 left-0 hidden w-64 border-r border-slate-200/80 p-5 lg:block">
         <NavLink
           to="/teams"
@@ -105,7 +113,7 @@ const AppLayout = () => {
         </div>
       </aside>
 
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="app-mobile-header sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
         <div className="flex items-center justify-between">
           <NavLink
             to="/teams"
@@ -138,7 +146,7 @@ const AppLayout = () => {
           "fixed inset-0 z-40 bg-slate-950/40 transition-opacity duration-200 lg:hidden",
           isMobileMenuOpen
             ? "pointer-events-auto opacity-100"
-            : "pointer-events-none opacity-0",
+            : "hidden pointer-events-none opacity-0",
         ].join(" ")}
         onClick={closeMobileMenu}
         aria-hidden="true"
@@ -149,9 +157,11 @@ const AppLayout = () => {
           "fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white p-5 shadow-2xl transition-transform duration-300 ease-out lg:hidden",
           isMobileMenuOpen
             ? "translate-x-0"
-            : "-translate-x-full",
+            : "invisible pointer-events-none -translate-x-full",
         ].join(" ")}
         aria-label="Mobile navigation"
+        aria-hidden={!isMobileMenuOpen}
+        inert={!isMobileMenuOpen}
       >
         <div className="flex items-center justify-between">
           <NavLink
@@ -226,8 +236,8 @@ const AppLayout = () => {
         </div>
       </aside>
 
-      <div className="lg:pl-64">
-        <main className="mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:px-8 lg:py-8 lg:pb-20">
+      <div className="app-content lg:pl-64" inert={isMobileMenuOpen}>
+        <main ref={pageScroll} className="app-scroll mx-auto max-w-7xl px-4 py-6 pb-20 sm:px-6 lg:px-8 lg:py-8 lg:pb-20">
           <PageTransition />
         </main>
         {pathname !== "/assistant" && !pathname.startsWith("/notifications") && !pathname.includes("/discussions/") && <NavLink to="/assistant" aria-label="Open DevFlow planning assistant"

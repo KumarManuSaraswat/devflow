@@ -142,6 +142,32 @@ test("client message merging deduplicates overlapping polls and preserves older 
   assert.deepEqual(mergeMessages([two], [one, two]), [one, two]);
   assert.equal(mergeDiscussion({ messages: [one], hasOlder: true }, { messages: [two], hasOlder: false }).hasOlder, true);
 });
+
+test("empty discussion polls preserve message references and new replies keep old bubbles stable", async () => {
+  const { mergeDiscussion, mergeMessages } = await import("../../client/src/utils/discussions.js");
+  const one = { id: "one", sequence: 1, body: "First" };
+  const two = { id: "two", sequence: 2, body: "Second" };
+  const current = [one, two];
+  assert.equal(mergeMessages(current, []), current);
+  assert.equal(mergeDiscussion({ messages: current, hasOlder: true }, { messages: [], hasMore: false }).messages, current);
+  const three = { id: "three", sequence: 3, body: "Third" };
+  const appended = mergeMessages(current, [three]);
+  assert.deepEqual(appended, [one, two, three]);
+  assert.equal(appended[0], one);
+  assert.equal(appended[1], two);
+  const updated = { ...two, body: "Updated" };
+  assert.equal(mergeMessages(current, [updated])[1], updated);
+  assert.deepEqual(current, [one, two]);
+});
+
+test("discussion timestamps reuse locale formatting and tolerate invalid input", async () => {
+  const { discussionTime } = await import("../../client/src/utils/discussions.js");
+  const date = "2026-09-26T12:00:00.000Z";
+  const expected = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(date));
+  assert.equal(discussionTime(date), expected);
+  assert.equal(discussionTime(date), expected);
+  assert.equal(discussionTime("invalid"), "Invalid Date");
+});
 test("HTTP flow applies parsed cursors, authentication, role checks, team isolation and no-store", async t => {
   const app = express(); app.use(express.json());
   const db = memoryDiscussionDb();

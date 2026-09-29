@@ -8,6 +8,7 @@ import PageLoader from "../components/common/PageLoader";
 import TaskReviewActions from "../components/tasks/TaskReviewActions";
 import TaskStatusActions from "../components/tasks/TaskStatusActions";
 import TaskPlanning from "../components/assistant/TaskPlanning";
+import { resourceCache } from "../utils/resourceCache";
 import {
   PRIORITY_LABELS,
   PRIORITY_STYLES,
@@ -26,20 +27,24 @@ const TaskPage = () => {
   const { taskId } = useParams();
   const { user } = useAuth();
 
-  const [task, setTask] = useState(null);
-  const [membership, setMembership] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [cached] = useState(() => resourceCache.read(`task:${taskId}`));
+  const [task, setTask] = useState(cached?.task || null);
+  const [membership, setMembership] = useState(cached?.membership || null);
+  const [isLoading, setIsLoading] = useState(!cached);
   const [error, setError] = useState("");
 
   const loadTask = useCallback(async () => {
+    const ticket = resourceCache.ticket();
     try {
       setError("");
 
       const response = await getTaskById(taskId);
+      resourceCache.write(`task:${taskId}`, response, ticket);
 
       setTask(response.task);
       setMembership(response.membership);
     } catch (err) {
+      if ([401, 403, 404].includes(err.response?.status)) { setTask(null); setMembership(null); }
       setError(
         err.response?.data?.message ||
           "Unable to load this task."

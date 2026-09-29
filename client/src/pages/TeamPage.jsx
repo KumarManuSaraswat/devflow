@@ -12,15 +12,17 @@ import Card from "../components/common/Card";
 import Modal from "../components/common/Modal";
 import PageLoader from "../components/common/PageLoader";
 import DiscussionOverview from "../components/discussions/DiscussionOverview";
+import { resourceCache } from "../utils/resourceCache";
 
 const TeamPage = () => {
   const { teamId } = useParams();
 
-  const [team, setTeam] = useState(null);
-  const [membership, setMembership] = useState(null);
-  const [projects, setProjects] = useState([]);
+  const [cached] = useState(() => resourceCache.read(`team:${teamId}`));
+  const [team, setTeam] = useState(cached?.team || null);
+  const [membership, setMembership] = useState(cached?.membership || null);
+  const [projects, setProjects] = useState(cached?.projects || []);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!cached);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -37,6 +39,7 @@ const TeamPage = () => {
   );
 
   const loadTeamData = useCallback(async () => {
+    const ticket = resourceCache.ticket();
     try {
       setError("");
 
@@ -47,9 +50,11 @@ const TeamPage = () => {
         ]);
 
       setTeam(teamResponse.team);
+      resourceCache.write(`team:${teamId}`, { ...teamResponse, projects: projectsResponse.projects || [] }, ticket);
       setMembership(teamResponse.membership);
       setProjects(projectsResponse.projects || []);
     } catch (err) {
+      if ([401, 403, 404].includes(err.response?.status)) { setTeam(null); setMembership(null); setProjects([]); }
       setError(
         err.response?.data?.message ||
           "Unable to load this workspace."
@@ -180,6 +185,7 @@ const TeamPage = () => {
           </div>
 
           <div className="flex flex-wrap gap-3">
+            <Link to={`/teams/${teamId}/report`} className="motion-button inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Delivery report</Link>
             <Link to={`/teams/${teamId}/discussions`} className="motion-button inline-flex items-center rounded-xl border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-700 hover:bg-brand-100">Team discussions</Link>
             <Link to={`/teams/${teamId}/members`}>
               <Button variant="secondary">

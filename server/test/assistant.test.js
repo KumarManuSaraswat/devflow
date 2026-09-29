@@ -21,7 +21,8 @@ function fixture() {
 const input = { message: "Who should build the React interface?", intent: "assign", requiredSkills: [], allowCloud: true };
 const env = { ASSISTANT_CLOUD_ENABLED: "true", ASSISTANT_FREE_TIER_CONFIRMED: "true", GEMINI_API_KEY: "test-gemini", GROQ_API_KEY: "test-groq" };
 const mockQuota = () => ({ reserve: async () => true, block: async () => {} });
-const ok = (source, text = "Plan your milestones and confirm availability.") => new Response(JSON.stringify(source === "gemini" ? { candidates: [{ content: { parts: [{ text }] } }] } : { choices: [{ message: { content: text } }] }), { status: 200 });
+const validAdvice = { summary: 'Plan your milestones and confirm availability.', nextSteps: ['Agree on scope.'], questions: ['What is the deadline?'] };
+const ok = (source, text = JSON.stringify(validAdvice)) => new Response(JSON.stringify(source === "gemini" ? { candidates: [{ finishReason: 'STOP', content: { parts: [{ text }] } }] } : { choices: [{ finish_reason: 'stop', message: { content: text } }] }), { status: 200 });
 
 test("skills outrank low workload; unavailable/reviewer-only members excluded; completed tasks ignored", () => {
   const result = advise(fixture(), input);

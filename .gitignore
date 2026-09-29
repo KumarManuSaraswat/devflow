@@ -6,3 +6,9 @@ dist
 coverage
 devflow-fcm.json
 .DS_Store
+
+# Private release-signing material and generated distribution files
+.signing/
+releases/
+*.jks
+*.keystore

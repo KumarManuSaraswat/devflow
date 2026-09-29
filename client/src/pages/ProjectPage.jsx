@@ -14,16 +14,18 @@ import Modal from "../components/common/Modal";
 import PageLoader from "../components/common/PageLoader";
 import CreateTaskForm from "../components/tasks/CreateTaskForm";
 import TaskBoard from "../components/tasks/TaskBoard";
+import { resourceCache } from "../utils/resourceCache";
 
 const ProjectPage = () => {
   const { projectId } = useParams();
 
-  const [project, setProject] = useState(null);
-  const [membership, setMembership] = useState(null);
-  const [tasks, setTasks] = useState([]);
-  const [members, setMembers] = useState([]);
+  const [cached] = useState(() => resourceCache.read(`project:${projectId}`));
+  const [project, setProject] = useState(cached?.project || null);
+  const [membership, setMembership] = useState(cached?.membership || null);
+  const [tasks, setTasks] = useState(cached?.tasks || []);
+  const [members, setMembers] = useState(cached?.members || []);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!cached);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -35,22 +37,22 @@ const ProjectPage = () => {
   );
 
   const loadProjectData = useCallback(async () => {
+    const ticket = resourceCache.ticket();
     try {
       setError("");
 
-      const projectResponse = await getProjectById(projectId);
-
-      const [tasksResponse, membersResponse] =
-        await Promise.all([
-          getProjectTasks(projectId),
-          getTeamMembers(projectResponse.project.teamId),
-        ]);
+      const [projectResponse, tasksResponse] = await Promise.all([
+        getProjectById(projectId), getProjectTasks(projectId),
+      ]);
+      const membersResponse = await getTeamMembers(projectResponse.project.teamId);
+      resourceCache.write(`project:${projectId}`, { ...projectResponse, tasks: tasksResponse.tasks || [], members: membersResponse.members || [] }, ticket);
 
       setProject(projectResponse.project);
       setMembership(projectResponse.membership);
       setTasks(tasksResponse.tasks || []);
       setMembers(membersResponse.members || []);
     } catch (err) {
+      if ([401, 403, 404].includes(err.response?.status)) { setProject(null); setMembership(null); setTasks([]); setMembers([]); }
       setError(
         err.response?.data?.message ||
           "Unable to load project data."

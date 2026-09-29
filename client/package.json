@@ -8,6 +8,7 @@
     "build": "vite build",
     "android:build": "node scripts/build-android.mjs",
     "android:sync": "npm run android:build && cap sync android",
+    "android:release": "node scripts/release-android.mjs",
     "android:open": "cap open android",
     "lint": "eslint .",
     "preview": "vite preview"

@@ -16,6 +16,7 @@ import Card from "../components/common/Card";
 import PageLoader from "../components/common/PageLoader";
 import MemberSkills from "../components/assistant/MemberSkills";
 import { useAuth } from "../context/useAuth";
+import { resourceCache } from "../utils/resourceCache";
 
 const MEMBER_ROLES = [
   "ADMIN",
@@ -37,12 +38,13 @@ const TeamMembersPage = () => {
   const { teamId } = useParams();
   const { user } = useAuth();
 
-  const [team, setTeam] = useState(null);
-  const [membership, setMembership] = useState(null);
-  const [members, setMembers] = useState([]);
-  const [invites, setInvites] = useState([]);
+  const [cached] = useState(() => resourceCache.read(`members:${teamId}`));
+  const [team, setTeam] = useState(cached?.team || null);
+  const [membership, setMembership] = useState(cached?.membership || null);
+  const [members, setMembers] = useState(cached?.members || []);
+  const [invites, setInvites] = useState(cached?.invites || []);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!cached);
   const [isCreatingInvite, setIsCreatingInvite] =
     useState(false);
 
@@ -63,11 +65,11 @@ const TeamMembersPage = () => {
   const isOwner = membership?.role === "OWNER";
 
   const loadPageData = useCallback(async () => {
+    const ticket = resourceCache.ticket();
     try {
       setError("");
 
-      const teamResponse = await getTeamById(teamId);
-      const membersResponse = await getTeamMembers(teamId);
+      const [teamResponse, membersResponse] = await Promise.all([getTeamById(teamId), getTeamMembers(teamId)]);
 
       let invitesResponse = { invites: [] };
 
@@ -80,10 +82,12 @@ const TeamMembersPage = () => {
       }
 
       setTeam(teamResponse.team);
+      resourceCache.write(`members:${teamId}`, { ...teamResponse, members: membersResponse.members || [], invites: invitesResponse.invites || [] }, ticket);
       setMembership(teamResponse.membership);
       setMembers(membersResponse.members || []);
       setInvites(invitesResponse.invites || []);
     } catch (err) {
+      if ([401, 403, 404].includes(err.response?.status)) { setTeam(null); setMembership(null); setMembers([]); setInvites([]); }
       setError(
         err.response?.data?.message ||
           "Unable to load team members."

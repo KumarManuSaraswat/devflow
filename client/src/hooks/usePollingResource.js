@@ -1,25 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { resourceCache } from "../utils/resourceCache";
 
 // A single cancellable request at a time. Pause hidden/offline tabs and back off on errors.
 // load/merge must be stable callbacks. Key the consuming component when changing its scope.
-export default function usePollingResource(load, { interval = 10000, merge } = {}) {
-  const [data, setData] = useState(null);
+export default function usePollingResource(load, { interval = 10000, merge, cacheKey } = {}) {
+  const [data, setData] = useState(() => cacheKey ? resourceCache.read(cacheKey) : null);
   const [error, setError] = useState(() => navigator.onLine ? null : { message: "You're offline. Reconnect to load updates.", denied: false });
-  const value = useRef(null);
+  const value = useRef(data);
   const active = useRef(false);
   const request = useRef(null);
   const mutate = useCallback(update => {
     value.current = typeof update === "function" ? update(value.current) : update;
+    if (cacheKey) resourceCache.write(cacheKey, value.current);
     setData(value.current);
-  }, []);
+  }, [cacheKey]);
   const refresh = useCallback(async () => {
     if (!active.current) return;
     request.current?.abort();
     const controller = new AbortController();
     request.current = controller;
+    const ticket = resourceCache.ticket();
     try {
       const incoming = await load(controller.signal, value.current);
       if (controller.signal.aborted || !active.current) return;
+      // A mutation or account transition occurred while this read was in flight.
+      if (ticket !== resourceCache.ticket()) return { hasMore: true };
       mutate(current => merge ? merge(current, incoming) : incoming);
       setError(null);
       return incoming;
