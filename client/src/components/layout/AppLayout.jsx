@@ -92,6 +92,7 @@ const AppLayout = () => {
             <span className="mr-3 text-base" aria-hidden="true">✦</span>Ask DevFlow
           </NavLink>
           <NavLink to="/notifications" className={linkClass}><span className="mr-3" aria-hidden="true">◉</span>Notifications</NavLink>
+          <NavLink to="/concepts" className={linkClass}><span className="mr-3" aria-hidden="true">⌘</span>Concept lab</NavLink>
         </nav>
 
         <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-slate-200/80 bg-white/75 p-3 shadow-sm backdrop-blur">
@@ -207,6 +208,7 @@ const AppLayout = () => {
             <span className="mr-3 text-base" aria-hidden="true">✦</span>Ask DevFlow
           </NavLink>
           <NavLink to="/notifications" className={linkClass} onClick={closeMobileMenu}><span className="mr-3" aria-hidden="true">◉</span>Notifications</NavLink>
+          <NavLink to="/concepts" className={linkClass} onClick={closeMobileMenu}><span className="mr-3" aria-hidden="true">⌘</span>Concept lab</NavLink>
         </nav>
 
         <div className="mt-auto rounded-xl border border-slate-200 bg-slate-50 p-4">

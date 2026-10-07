@@ -1,4 +1,6 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from "react-router-dom";
+import PageLoader from './components/common/PageLoader';
 import { isAndroid } from "./mobile/push";
 import NotificationsPage, { NotificationRedirect } from "./pages/NotificationsPage";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
@@ -18,6 +20,7 @@ import PageTransition from "./components/motion/PageTransition";
 import AssistantPage from "./pages/AssistantPage";
 import DiscussionsPage from "./pages/DiscussionsPage";
 import DiscussionPage from "./pages/DiscussionPage";
+const ConceptLabPage = lazy(() => import('./pages/ConceptLabPage'));
 
 const App = () => {
   return (
@@ -36,6 +39,7 @@ const App = () => {
 
         <Route element={<AppLayout />}>
           <Route path="/assistant" element={<AssistantPage />} />
+          <Route path="/concepts" element={<Suspense fallback={<PageLoader text="Opening concept lab…" />}><ConceptLabPage /></Suspense>} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/notifications/:notificationId" element={<NotificationRedirect />} />
           <Route path="/teams" element={<TeamsPage />} />

@@ -7,7 +7,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 export default defineConfig([
   globalIgnores(['dist', 'dist-android', 'android']),
   {
-    files: ['**/*.{js,jsx}'],
+    files: ['**/*.{js,jsx}', 'public/demos/*.mjs'],
     extends: [
       js.configs.recommended,
       reactHooks.configs.flat.recommended,
